@@ -1,0 +1,2 @@
+# mavenzip
+Resolving maven artifacts
