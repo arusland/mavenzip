@@ -22,272 +22,276 @@ import java.util.logging.Logger;
  * Created by ruslan on 17.06.2016.
  */
 public class MainApp {
-    private final static Logger log = Logger.getLogger(MainApp.class.getName());
-    private final HttpServletRequest request;
-    private HttpServletResponse response;
-    private File root;
-    private File currentDir;
-    private String currentDirFullPath;
-    private String pomContent;
-    private final List<Message> messages = new ArrayList<Message>();
+	private final static Logger log = Logger.getLogger(MainApp.class.getName());
+	private final HttpServletRequest request;
+	private HttpServletResponse response;
+	private File root;
+	private File currentDir;
+	private String currentDirFullPath;
+	private String pomContent;
+	private final List<Message> messages = new ArrayList<Message>();
 
-    public MainApp(HttpServletRequest request, HttpServletResponse response) {
-        this.request = Validate.notNull(request, "request");
-        this.response = Validate.notNull(response, "response");
-    }
+	public MainApp(HttpServletRequest request, HttpServletResponse response) {
+		this.request = Validate.notNull(request, "request");
+		this.response = Validate.notNull(response, "response");
+	}
 
-    public void handleIndex() {
-        root = getRoot();
-        currentDir = getCurrentDir();
-        pomContent = loadCurrentPomContent(request);
-        currentDirFullPath = FileUtil.getFullPath(currentDir);
+	public void handleIndex() {
+		root = getRoot();
+		currentDir = getCurrentDir();
+		pomContent = loadCurrentPomContent(request);
+		currentDirFullPath = FileUtil.getFullPath(currentDir);
 
-        try {
-            handleCommand();
-        } catch (Exception ex) {
-            messages.add(new Message(ex.getMessage(), "error"));
-        }
+		try {
+			handleCommand();
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
+			messages.add(new Message("Null pointer exception!", "error"));
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			messages.add(new Message(ex.getMessage(), "error"));
+		}
 
-        log.info("BASE DIR: " + root);
-        log.info("CURRENT DIR: " + currentDirFullPath);
-    }
+		log.info("BASE DIR: " + root);
+		log.info("CURRENT DIR: " + currentDirFullPath);
+	}
 
-    public void handleDownload() {
-        root = getRoot();
-        currentDir = getCurrentDir();
+	public void handleDownload() {
+		root = getRoot();
+		currentDir = getCurrentDir();
 
-        try {
-            log.info("Downloading file: " + currentDir);
+		try {
+			log.info("Downloading file: " + currentDir);
 
-            if (currentDir.isFile()) {
-                downloadFile(currentDir);
-            } else {
-                messages.add(new Message("You cannot download this file: " + currentDir, "error"));
-            }
-        } catch (Exception ex) {
-            messages.add(new Message(ex.getMessage(), "error"));
-        }
-    }
+			if (currentDir.isFile()) {
+				downloadFile(currentDir);
+			} else {
+				messages.add(new Message("You cannot download this file: " + currentDir, "error"));
+			}
+		} catch (Exception ex) {
+			messages.add(new Message(ex.getMessage(), "error"));
+		}
+	}
 
-    private void downloadFile(File downloadFile) throws IOException {
-        FileInputStream inStream = new FileInputStream(downloadFile);
-        String mimeType = "application/octet-stream";
-        response.setContentType(mimeType);
-        response.setContentLength((int) downloadFile.length());
-        String headerKey = "Content-Disposition";
-        String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
-        response.setHeader(headerKey, headerValue);
-        OutputStream outStream = response.getOutputStream();
+	private void downloadFile(File downloadFile) throws IOException {
+		FileInputStream inStream = new FileInputStream(downloadFile);
+		String mimeType = "application/octet-stream";
+		response.setContentType(mimeType);
+		response.setContentLength((int) downloadFile.length());
+		String headerKey = "Content-Disposition";
+		String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
+		response.setHeader(headerKey, headerValue);
+		OutputStream outStream = response.getOutputStream();
 
-        byte[] buffer = new byte[4096];
-        int bytesRead = -1;
+		byte[] buffer = new byte[4096];
+		int bytesRead = -1;
 
-        while ((bytesRead = inStream.read(buffer)) != -1) {
-            outStream.write(buffer, 0, bytesRead);
-        }
+		while ((bytesRead = inStream.read(buffer)) != -1) {
+			outStream.write(buffer, 0, bytesRead);
+		}
 
-        inStream.close();
-        outStream.close();
-    }
+		inStream.close();
+		outStream.close();
+	}
 
-    private void handleCommand() {
-        if (StringUtils.isNotBlank(request.getParameter("btnMaven1"))) {
-            MavenUtil.goOffline(getPomFile(), new File(getPomFile().getParentFile(), "repository"), messages);
-        } else {
-            boolean isZip = StringUtils.isNotBlank(request.getParameter("btnZip"));
-            boolean isDelete = StringUtils.isNotBlank(request.getParameter("btnDelete"));
+	private void handleCommand() {
+		if (StringUtils.isNotBlank(request.getParameter("btnMaven1"))) {
+			MavenUtil.goOffline(getPomFile(), new File(getPomFile().getParentFile(), "repository"), messages);
+		} else {
+			boolean isZip = StringUtils.isNotBlank(request.getParameter("btnZip"));
+			boolean isDelete = StringUtils.isNotBlank(request.getParameter("btnDelete"));
 
-            if (isZip || isDelete) {
-                List<File> selectedFiles = getSelectedFiles();
+			if (isZip || isDelete) {
+				List<File> selectedFiles = getSelectedFiles();
 
-                if (selectedFiles.size() > 0) {
-                    if (isZip) {
-                        doZip(selectedFiles);
-                    } else if (isDelete) {
-                        doDelete(selectedFiles);
-                    }
-                } else {
-                    messages.add(new Message("You must select at least one file", "error"));
-                }
-            }
-        }
-    }
+				if (selectedFiles.size() > 0) {
+					if (isZip) {
+						doZip(selectedFiles);
+					} else if (isDelete) {
+						doDelete(selectedFiles);
+					}
+				} else {
+					messages.add(new Message("You must select at least one file", "error"));
+				}
+			}
+		}
+	}
 
-    private List<File> getSelectedFiles() {
-        if (canShowDir()) {
-            String[] selected = request.getParameterValues("selected[]");
+	private List<File> getSelectedFiles() {
+		if (canShowDir()) {
+			String[] selected = request.getParameterValues("selected[]");
 
-            if (selected == null) {
-                selected = new String[0];
-            }
+			if (selected == null) {
+				selected = new String[0];
+			}
 
-            List<File> result = new ArrayList<File>();
+			List<File> result = new ArrayList<File>();
 
-            for (String selectedFile : selected) {
-                File file = new File(currentDir, selectedFile);
+			for (String selectedFile : selected) {
+				File file = new File(currentDir, selectedFile);
 
-                if (file.exists()) {
-                    result.add(file);
-                }
-            }
+				if (file.exists()) {
+					result.add(file);
+				}
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        return Collections.emptyList();
-    }
+		return Collections.emptyList();
+	}
 
-    private void doDelete(List<File> selected) {
-        try {
-            for (File file : selected) {
-                log.info("Deleting " + file);
-                FileUtils.deleteQuietly(file);
-            }
-        } catch (Exception ex) {
-            messages.add(new Message(StringEscapeUtils.escapeHtml(ex.getMessage()), "error"));
-        }
-    }
+	private void doDelete(List<File> selected) {
+		try {
+			for (File file : selected) {
+				log.info("Deleting " + file);
+				FileUtils.deleteQuietly(file);
+			}
+		} catch (Exception ex) {
+			messages.add(new Message(StringEscapeUtils.escapeHtml(ex.getMessage()), "error"));
+		}
+	}
 
-    private void doZip(List<File> selected) {
-        try {
-            String targetZipFilePath;
+	private void doZip(List<File> selected) {
+		try {
+			String targetZipFilePath;
 
-            if (selected.size() == 1) {
-                targetZipFilePath = selected.get(0).getAbsolutePath();
-            } else {
-                File parent = selected.get(0).getParentFile();
-                targetZipFilePath = new File(parent, parent.getName()).getAbsolutePath();
-            }
+			if (selected.size() == 1) {
+				targetZipFilePath = selected.get(0).getAbsolutePath();
+			} else {
+				File parent = selected.get(0).getParentFile();
+				targetZipFilePath = new File(parent, parent.getName()).getAbsolutePath();
+			}
 
-            File targetZipFile = new File(targetZipFilePath + ".zip");
-            int index = 2;
+			File targetZipFile = new File(targetZipFilePath + ".zip");
+			int index = 2;
 
-            while (targetZipFile.exists()) {
-                targetZipFile = new File(targetZipFilePath + "_" + (index++) + ".zip");
-            }
+			while (targetZipFile.exists()) {
+				targetZipFile = new File(targetZipFilePath + "_" + (index++) + ".zip");
+			}
 
-            ZipUtil.zipDir(selected, targetZipFile);
-        } catch (Exception ex) {
-            messages.add(new Message(StringEscapeUtils.escapeHtml(ex.getMessage()), "error"));
-        }
-    }
+			ZipUtil.zipDir(selected, targetZipFile);
+		} catch (Exception ex) {
+			messages.add(new Message(StringEscapeUtils.escapeHtml(ex.getMessage()), "error"));
+		}
+	}
 
-    public String getCurrentDirFullPath() {
-        return currentDirFullPath;
-    }
+	public String getCurrentDirFullPath() {
+		return currentDirFullPath;
+	}
 
-    public boolean canShowDir() {
-        return currentDir != null && currentDir.isDirectory();
-    }
+	public boolean canShowDir() {
+		return currentDir != null && currentDir.isDirectory();
+	}
 
-    public String getPomContent() {
-        return pomContent;
-    }
+	public String getPomContent() {
+		return pomContent;
+	}
 
-    public List<FileItem> getFiles() {
-        ArrayList<FileItem> items = new ArrayList<FileItem>();
+	public List<FileItem> getFiles() {
+		ArrayList<FileItem> items = new ArrayList<FileItem>();
 
-        if (canShowDir()) {
-            File[] files = currentDir.listFiles();
+		if (canShowDir()) {
+			File[] files = currentDir.listFiles();
 
-            if (files != null) {
-                for (File file : files) {
-                    items.add(new FileItem(file.getName(), file,
-                            FileUtil.getRelativePath(file, root), getFriendlySize(file)));
-                }
+			if (files != null) {
+				for (File file : files) {
+					items.add(new FileItem(file.getName(), file, FileUtil.getRelativePath(file, root),
+							getFriendlySize(file)));
+				}
 
-                Collections.sort(items);
-            } else {
-                items.add(new FileItem("!ERROR: Failed to list files!", currentDir,
-                        FileUtil.getRelativePath(currentDir, root), "!FAILED!"));
-            }
+				Collections.sort(items);
+			} else {
+				items.add(new FileItem("!ERROR: Failed to list files!", currentDir,
+						FileUtil.getRelativePath(currentDir, root), "!FAILED!"));
+			}
 
-            File upDir = currentDir.getParentFile();
+			File upDir = currentDir.getParentFile();
 
-            if (upDir != null) {
-                String updirPath = FileUtil.getRelativePath(upDir, root);
-                if (StringUtils.isNotBlank(updirPath)) {
-                    items.add(0, new FileItem("..", upDir, updirPath, getFriendlySize(upDir)));
-                }
-            }
-        }
+			if (upDir != null) {
+				String updirPath = FileUtil.getRelativePath(upDir, root);
+				if (StringUtils.isNotBlank(updirPath)) {
+					items.add(0, new FileItem("..", upDir, updirPath, getFriendlySize(upDir)));
+				}
+			}
+		}
 
-        return items;
-    }
+		return items;
+	}
 
-    private String getFriendlySize(File file) {
-        if (file.isDirectory()) {
-            return "-";
-        }
+	private String getFriendlySize(File file) {
+		if (file.isDirectory()) {
+			return "-";
+		}
 
-        return FileUtils.byteCountToDisplaySize(file.length());
-    }
+		return FileUtils.byteCountToDisplaySize(file.length());
+	}
 
-    private File getRoot() {
-        String fileRoot = ObjectUtils.firstNonNull(request.getServletContext().getInitParameter("ROOT_DIR"),
-                System.getProperty("user.home"), ".");
+	private File getRoot() {
+		String fileRoot = ObjectUtils.firstNonNull(request.getServletContext().getInitParameter("ROOT_DIR"),
+				System.getProperty("user.home"), ".");
 
-        File file = new File(fileRoot);
+		File file = new File(fileRoot);
 
-        if (!file.exists()) {
-            try {
-                file.mkdirs();
-            } catch (Exception ex) {
-                log.info("ERROR: " + ex.getMessage() + "; stack: " + ex.toString());
-            }
-        }
+		if (!file.exists()) {
+			try {
+				file.mkdirs();
+			} catch (Exception ex) {
+				log.info("ERROR: " + ex.getMessage() + "; stack: " + ex.toString());
+			}
+		}
 
-        return file;
-    }
+		return file;
+	}
 
-    private File getCurrentDir() {
-        String path = request.getParameter("path");
-        File currentDir = root;
+	private File getCurrentDir() {
+		String path = request.getParameter("path");
+		File currentDir = root;
 
-        if (StringUtils.isNotBlank(path)) {
-            currentDir = new File(root, path.replaceAll("[\\\\/]+$", StringUtils.EMPTY));
-        }
+		if (StringUtils.isNotBlank(path)) {
+			currentDir = new File(root, path.replaceAll("[\\\\/]+$", StringUtils.EMPTY));
+		}
 
-        return currentDir;
-    }
+		return currentDir;
+	}
 
-    private String loadCurrentPomContent(HttpServletRequest request) {
-        String pomRaw = StringUtils.EMPTY;
+	private String loadCurrentPomContent(HttpServletRequest request) {
+		String pomRaw = StringUtils.EMPTY;
 
-        if (canShowDir()) {
-            String postData = request.getMethod() == "POST" ? request.getParameter("pomContent") : StringUtils.EMPTY;
-            File pomFile = getPomFile();
+		if (canShowDir()) {
+			String postData = request.getMethod() == "POST" ? request.getParameter("pomContent") : StringUtils.EMPTY;
+			File pomFile = getPomFile();
 
-            if (StringUtils.isNotEmpty(postData)) {
-                FileUtil.writeFile(pomFile, postData);
-                pomRaw = postData;
-            } else if (pomFile.exists()) {
-                pomRaw = FileUtil.getFileContent(pomFile);
-            }
+			if (StringUtils.isNotEmpty(postData)) {
+				FileUtil.writeFile(pomFile, postData);
+				pomRaw = postData;
+			} else if (pomFile.exists()) {
+				pomRaw = FileUtil.getFileContent(pomFile);
+			}
 
-            if (StringUtils.isBlank(pomRaw)) {
-                pomRaw = FileUtil.getResourceFileContent("template.pom");
-            }
-        }
+			if (StringUtils.isBlank(pomRaw)) {
+				pomRaw = FileUtil.getResourceFileContent("template.pom");
+			}
+		}
 
-        return StringUtils.defaultString(pomRaw);
-    }
+		return StringUtils.defaultString(pomRaw);
+	}
 
-    public List<Message> getMessages() {
-        return messages;
-    }
+	public List<Message> getMessages() {
+		return messages;
+	}
 
-    public String getPath() {
-        String path = request.getParameter("path");
+	public String getPath() {
+		String path = request.getParameter("path");
 
-        return StringUtils.defaultIfEmpty(path, "/");
-    }
+		return StringUtils.defaultIfEmpty(path, "/");
+	}
 
-    private File getPomFile() {
-        if (canShowDir()) {
-            return new File(currentDir, "pom.xml");
-        }
+	private File getPomFile() {
+		if (canShowDir()) {
+			return new File(currentDir, "pom.xml");
+		}
 
-        return null;
-    }
+		return null;
+	}
 }

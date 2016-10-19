@@ -1,5 +1,7 @@
 package io.arusland.allinone;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 /**
  * Created by ruslan on 24.06.2016.
  */
@@ -14,6 +16,10 @@ public class Message {
 
     public String getMessage() {
         return message;
+    }
+    
+    public String getMessageEscaped() {
+        return StringEscapeUtils.escapeHtml4(message);
     }
 
     public String getType() {

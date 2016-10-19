@@ -12,7 +12,7 @@
     <title>Maven dependency helper</title>
 
     <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/main.css">
+    <link rel="stylesheet" type="text/css" href="static/main.css">
 </head>
 <body>
 
@@ -52,7 +52,7 @@
         %>
         <tr>
             <td><input type="checkbox" name="selected[]" value="<%=file.getName()%>"/></td>
-            <td><a href="/?path=<%=file.getPath()%>"><%=file.getName()%></a></td>
+            <td><a href="?path=<%=file.getPath()%>"><%=file.getName()%></a></td>
             <td><%=file.getSizeStr()%>
             </td>
             <td><%=file.getDateStr()%>
@@ -63,7 +63,7 @@
         %>
         <tr>
             <td><input type="checkbox" name="selected[]" value="<%=file.getName()%>"/></td>
-            <td><a title="Download" href="/download.jsp?path=<%=file.getPath()%>" target="_blank"><%=file.getName()%></a>
+            <td><a title="Download" href="download.jsp?path=<%=file.getPath()%>" target="_blank"><%=file.getName()%></a>
             </td>
             <td><%=file.getSizeStr()%>
             </td>
@@ -87,7 +87,7 @@
     <%
     for (Message msg : app.getMessages()) {
         %>
-        msgs.append("<div class='<%=msg.getType()%>'><%=msg.getMessage()%></div>");
+        msgs.append("<div class='<%=msg.getType()%>'><%=msg.getMessageEscaped()%></div>");
     <%
     }
     %>
