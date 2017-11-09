@@ -25,4 +25,5 @@ cp ./target/allinone-1.0.war ./dist/mavenzip.war
 
 cd $sdir/dist
 
-java -jar jetty-runner-9.4.6.v20170531.jar --port 80 --path /mavenzip mavenzip.war &
+# jetty-runner
+jrunner --port 80 --path /mavenzip mavenzip.war &
