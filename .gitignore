@@ -1,3 +1,6 @@
 /webapps/*.war
 /target
 /.idea
+.idea
+*.iml
+/dist

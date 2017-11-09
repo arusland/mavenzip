@@ -229,7 +229,7 @@ public class MainApp {
 
 	private File getRoot() {
 		String fileRoot = ObjectUtils.firstNonNull(request.getServletContext().getInitParameter("ROOT_DIR"),
-				System.getProperty("user.home"), ".");
+				System.getProperty("user.home") + "/mavenzip", ".");
 
 		File file = new File(fileRoot);
 

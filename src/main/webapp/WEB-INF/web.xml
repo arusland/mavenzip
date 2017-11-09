@@ -8,9 +8,9 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-    <context-param>
+    <!--<context-param>
         <param-name>ROOT_DIR</param-name>
         <param-value>/var/lib/openshift/5763d7dc0c1e664e87000117/app-root/data/allinone</param-value>
-    </context-param>
+    </context-param>-->
 </web-app>
 
