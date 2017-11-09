@@ -13,20 +13,20 @@
         <param-value>/path/to/your/dir</param-value>
     </context-param>-->
 
-    <security-constraint>
+    <!--<security-constraint>
         <web-resource-collection>
-            <url-pattern>/*</url-pattern>      <!--The url that should be protected -->
+            <url-pattern>/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>admin</role-name>       <!--The required roles for accessing the url -->
+            <role-name>admin</role-name>
             <role-name>user</role-name>
             <role-name>moderator</role-name>
         </auth-constraint>
     </security-constraint>
 
     <login-config>
-        <auth-method>BASIC</auth-method>     <!-- Use http basic authentication -->
-        <realm-name>JCGRealm</realm-name>  <!-- Users are defined in this realm -->
-    </login-config>
+        <auth-method>BASIC</auth-method>
+        <realm-name>JCGRealm</realm-name>
+    </login-config>-->
 </web-app>
 
