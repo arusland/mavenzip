@@ -10,7 +10,23 @@
     </welcome-file-list>
     <!--<context-param>
         <param-name>ROOT_DIR</param-name>
-        <param-value>/var/lib/openshift/5763d7dc0c1e664e87000117/app-root/data/allinone</param-value>
+        <param-value>/path/to/your/dir</param-value>
     </context-param>-->
+
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/*</url-pattern>      <!--The url that should be protected -->
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>       <!--The required roles for accessing the url -->
+            <role-name>user</role-name>
+            <role-name>moderator</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+    <login-config>
+        <auth-method>BASIC</auth-method>     <!-- Use http basic authentication -->
+        <realm-name>JCGRealm</realm-name>  <!-- Users are defined in this realm -->
+    </login-config>
 </web-app>
 
