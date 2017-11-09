@@ -3,4 +3,5 @@
 /.idea
 .idea
 *.iml
-/dist
+/dist/*.jar
+/dist/*.war
