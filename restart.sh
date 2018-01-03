@@ -10,4 +10,4 @@ pgrep -a -f mavenzip.war | awk '{print $1;}' | while read -r a; do kill -9 $a; d
 cd $sdir/dist
 
 # jetty-runner
-jrunner --port 80 --path /mavenzip mavenzip.war &
+jrunner --port 8080 --path /mavenzip mavenzip.war &
