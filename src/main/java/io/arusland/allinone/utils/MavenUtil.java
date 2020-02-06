@@ -1,10 +1,6 @@
 package io.arusland.allinone.utils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -34,7 +30,7 @@ public class MavenUtil {
 		log.info("Resolving file " + pomFile);
 
 		List<RemoteRepository> remotes = new ArrayList<RemoteRepository>();
-		remotes.add(new RemoteRepository("maven-central", "default", "http://repo1.maven.org/maven2/"));
+		remotes.add(new RemoteRepository("maven-central", "default", "https://repo1.maven.org/maven2/"));
 
 		try {
 			MavenProject mavenProject = getMavenProject(pomFile);
@@ -58,6 +54,43 @@ public class MavenUtil {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (XmlPullParserException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static void goOffline2(File pomFile, File repositoryDir, List<Message> messages) {
+		log.info("Resolving file " + pomFile);
+
+
+		try {
+
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command("sh", "-c", String.format("mvn dependency:go-offline -f %s -Dmaven.repo.local=%s",
+                    pomFile.getAbsolutePath(), repositoryDir.getAbsolutePath()));
+            processBuilder.command("sh", "-c", String.format("mvn dependency:sources -f %s -Dmaven.repo.local=%s",
+                    pomFile.getAbsolutePath(), repositoryDir.getAbsolutePath()));
+
+            Process process = processBuilder.start();
+
+            StringBuilder output = new StringBuilder();
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line + "\n");
+            }
+
+            int exitVal = process.waitFor();
+            if (exitVal == 0) {
+                System.out.println("Success!");
+                System.out.println(output);
+            } else {
+                //abnormal...
+            }
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

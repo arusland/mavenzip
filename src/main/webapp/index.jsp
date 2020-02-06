@@ -21,7 +21,9 @@
 <form action="index.jsp" method="post">
     <p><strong>Edit pom.xml:</strong></p>
     <p><textarea rows="10" cols="145" name="pomContent"><%=app.getPomContent()%></textarea></p>
-    <p><input type="submit" name="btnMaven1" value="Resolve" title="Rosolve all dependencies of pom.xml"></p>
+    <p><input type="submit" name="btnMaven1" value="Resolve" title="Rosolve all dependencies of pom.xml">
+        <input type="checkbox" name="useNewMethod" value="true" checked></p>
+    </p>
 
     <input type="hidden" name="path" value="<%=app.getPath()%>"/>
 </form>
