@@ -22,7 +22,7 @@
     <p><strong>Edit pom.xml:</strong></p>
     <p><textarea rows="10" cols="145" name="pomContent"><%=app.getPomContent()%></textarea></p>
     <p><input type="submit" name="btnMaven1" value="Resolve" title="Rosolve all dependencies of pom.xml">
-        <input type="checkbox" name="useNewMethod" value="true" checked></p>
+        <input type="checkbox" name="useNewMethod" value="true" checked>go offline with sources</p>
     </p>
 
     <input type="hidden" name="path" value="<%=app.getPath()%>"/>
